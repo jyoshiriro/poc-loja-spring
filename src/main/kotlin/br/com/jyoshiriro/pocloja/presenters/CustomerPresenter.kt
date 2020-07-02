@@ -1,17 +1,19 @@
 package br.com.jyoshiriro.pocloja.presenters
 
 import br.com.jyoshiriro.pocloja.entities.Customer
+import io.swagger.annotations.ApiModel
 import org.springframework.data.domain.Page
 import java.time.LocalDate
 import java.time.Period
 import java.util.*
 
-data class CustomerPresenter (val id:Long?, val nome:String?, val cpf:String?, val dataNascimento:LocalDate?) {
+@ApiModel("Customer")
+data class CustomerPresenter (val id:Long?, val name:String?, val cpf:String?, val dateOfBirth:LocalDate?) {
 
     val idade: Int
-        get() = Period.between(dataNascimento, LocalDate.now()).getYears()
+        get() = Period.between(dateOfBirth, LocalDate.now()).getYears()
 
-    constructor(entidade: Customer) : this(entidade.id as Long?, entidade.name, entidade.cpf, entidade.dateOfBirth)
+    constructor(entidade: Customer) : this(entidade.id, entidade.name, entidade.cpf, entidade.dateOfBirth)
 
     companion object {
         @JvmStatic

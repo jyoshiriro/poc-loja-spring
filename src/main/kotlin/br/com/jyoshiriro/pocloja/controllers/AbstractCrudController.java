@@ -26,12 +26,18 @@ public abstract class AbstractCrudController
     @Autowired
     protected S service;
 
-    private final static String URI_ID = "/{id}";
-    private final static String MSG_CREATE_NEW = "Criar novo";
-    private final static String MSG_INVALID_FIELDS = "Um ou mais campos inválidos";
-    private final static String MSG_CREATED = "Criado com sucesso";
-    private final static String HEADER_LOCATION = "Location";
-    private final static String HEADER_LOCATION_VALOR = "URL do recurso recém criado";
+    protected final static String URI_ID = "/{id}";
+    protected final static String MSG_OK = "OK";
+    protected final static String MSG_CREATE_NEW = "Creates registry";
+    protected final static String MSG_UPDATE = "Updates registry";
+    protected final static String MSG_RETIREVE_ONE = "Retrieves registry by id";
+    protected static final String MSG_RETIREVE_ALL = "Retrieves all registries";
+    protected final static String MSG_DELETE_ONE = "Deletes registry by id";
+    protected final static String MSG_JSON_NEW = "New registry JSON";
+    protected final static String MSG_INVALID_FIELDS = "Invalid field(s)";
+    protected final static String MSG_CREATED = "Succesfully created!";
+    protected final static String HEADER_LOCATION = "Location";
+    protected final static String HEADER_LOCATION_VALOR = "Created resource URL";
 
     @PostMapping
     @ApiOperation(MSG_CREATE_NEW)
@@ -40,11 +46,11 @@ public abstract class AbstractCrudController
         @ApiResponse(code = 201, message = MSG_CREATED,
                 responseHeaders = @ResponseHeader(name = HEADER_LOCATION, description = HEADER_LOCATION_VALOR))
     })
-    public ResponseEntity create(@RequestBody @ApiParam("JSON de novo cliente") final E newInstance) {
-        return createTrigger(newInstance);
+    public ResponseEntity create(@RequestBody @ApiParam(MSG_JSON_NEW) final E newInstance) {
+        return createAction(newInstance);
     }
 
-    protected ResponseEntity createTrigger(final E newInstance) {
+    protected ResponseEntity createAction(final E newInstance) {
         this.service.create(newInstance);
 
         URI location = ServletUriComponentsBuilder
@@ -57,33 +63,36 @@ public abstract class AbstractCrudController
     }
 
     @GetMapping("/{id}")
+    @ApiOperation(MSG_RETIREVE_ONE)
     public ResponseEntity getOne(@PathVariable final I id) {
-        return this.getOneTrigger(id);
+        return this.getOneAction(id);
     }
 
-    protected ResponseEntity getOneTrigger(final I id) {
+    protected ResponseEntity getOneAction(final I id) {
         return of(this.service.findById(id));
     }
 
     @GetMapping
+    @ApiOperation(MSG_RETIREVE_ALL)
     public ResponseEntity<Page> getAll(final Pageable pageable) {
-        return getAllTrigger(pageable);
+        return getAllAction(pageable);
     }
 
-    protected ResponseEntity<Page> getAllTrigger(final Pageable pageable) {
+    protected ResponseEntity<Page> getAllAction(final Pageable pageable) {
         Page page = this.service.findAll(pageable);
 
-        return page.isEmpty() ? noContent().build() : of(Optional.of(page));
+        return this.getPageOrNoContent(page);
     }
 
 
     @PutMapping("/{id}")
+    @ApiOperation(MSG_UPDATE)
     @ApiResponses(@ApiResponse(code = 400, response = ErrosPresenter.class, message = MSG_INVALID_FIELDS))
     public ResponseEntity update(@PathVariable final I id, @RequestBody final E updatedEntity) {
-        return this.updateTrigger(id, updatedEntity);
+        return this.updateAction(id, updatedEntity);
     }
 
-    protected ResponseEntity updateTrigger(final I id, final E updatedEntity) {
+    protected ResponseEntity updateAction(final I id, final E updatedEntity) {
         if (this.service.existsById(id)) {
             this.service.update(id, updatedEntity);
             return ok().build();
@@ -93,6 +102,7 @@ public abstract class AbstractCrudController
     }
 
     @DeleteMapping("/{id}")
+    @ApiOperation(MSG_DELETE_ONE)
     public ResponseEntity delete(@PathVariable final I id) {
         return this.deleteTrigger(id);
     }
